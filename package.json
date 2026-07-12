@@ -1,0 +1,16 @@
+{
+  "name": "portfolio-terminal",
+  "version": "1.0.0",
+  "description": "Terminal-style portfolio with markdown content, themes, and a 2D platformer",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}

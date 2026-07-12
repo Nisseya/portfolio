@@ -1,0 +1,9 @@
+{
+  "name": "Your Name",
+  "role": "Your Role • Skills • Here",
+  "links": [
+    { "label": "github",   "url": "https://github.com/your-username" },
+    { "label": "linkedin", "url": "https://www.linkedin.com/in/your-username" },
+    { "label": "email",    "url": "mailto:you@example.com" }
+  ]
+}

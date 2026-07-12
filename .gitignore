@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+
+# your personal content (copy from content-example/)
+content/*
+!content/.gitkeep
+
+# keep the example tracked
+!content-example/
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# env
+.env
+.env.local

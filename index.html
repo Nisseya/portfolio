@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yassine Hadi</title>
+
+    <link rel="stylesheet" href="styles/base.css">
+
+    <script>
+        // detect file:// protocol — modules/fetch won't work
+        if (location.protocol === 'file:') {
+            document.addEventListener('DOMContentLoaded', () => {
+                document.body.innerHTML = '<div style="font-family:monospace;padding:60px;max-width:600px;margin:0 auto;color:#8b949e;background:#0d1117;min-height:100vh">' +
+                    '<h2 style="color:#ff6b6b;margin-bottom:20px">⚠ file:// protocol detected</h2>' +
+                    '<p>ES modules and fetch() are blocked under file://. Run the dev server:</p>' +
+                    '<pre style="color:#6cb6ff;margin:16px 0;padding:12px;background:#0b0f14;border-radius:8px">node scripts/dev.mjs</pre>' +
+                    '<p>Then open <a href="http://localhost:3000" style="color:#6cb6ff">http://localhost:3000</a></p>' +
+                    '<p style="margin-top:24px;color:#5a6470">Or build a static bundle:</p>' +
+                    '<pre style="color:#6cb6ff;margin:16px 0;padding:12px;background:#0b0f14;border-radius:8px">node scripts/build.mjs --theme midnight</pre>' +
+                    '</div>';
+            });
+        }
+    </script>
+</head>
+<body>
+
+<div id="tsparticles"></div>
+<div class="noise"></div>
+
+<main>
+
+    <div class="terminal">
+
+        <div class="window-bar">
+            <div class="window-controls">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+
+            <span class="title" id="breadcrumb">yassine@portfolio:~</span>
+
+            <div class="owner-links" id="owner-links"></div>
+        </div>
+
+        <div class="body-split">
+
+            <aside class="sidebar">
+                <div class="sidebar-header">sections</div>
+                <nav id="nav-strip" class="nav-strip"></nav>
+                <div class="sidebar-header">quick commands</div>
+                <div class="quick-cmds" id="quick-cmds"></div>
+            </aside>
+
+            <div class="preview-panel">
+                <div id="preview" class="preview-content"></div>
+            </div>
+
+        </div>
+
+        <div class="terminal-panel">
+            <div id="terminal-output" class="terminal-output"></div>
+            <div class="footer">
+                <span class="prompt">$</span>
+                <input id="cmd" type="text" autocomplete="off" spellcheck="false"
+                       placeholder="type 'help' — Tab to complete, ↑/↓ for history" />
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span class="status-hint">
+                <kbd>Tab</kbd> complete · <kbd>↑</kbd><kbd>↓</kbd> history · <kbd>Enter</kbd> run
+            </span>
+            <span class="status-section" id="status-section">home</span>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+<script type="module" src="src/main.js"></script>
+
+</body>
+</html>
