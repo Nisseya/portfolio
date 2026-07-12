@@ -1,113 +1,142 @@
-# Building a Theme
+# Themes, Layouts & Palettes
 
-Themes are JSON files in `themes/` that define the visual identity of the portfolio. This document explains the schema and how to create your own.
+A **theme** is a combination of a **layout** (structure) and a **palette** (colors/fonts/effects). This separation lets you mix and match — e.g. a linktree layout with a matrix palette.
 
-## Quick Start
+## Structure
 
-1. Copy an existing theme as a starting point:
-   ```
-   cp themes/midnight.json themes/my-theme.json
-   ```
+```
+themes/
+├── layouts/              # structural definitions
+│   ├── terminal.json    # sidebar + preview + bottom terminal
+│   ├── linktree.json    # centered card, section buttons, no terminal
+│   └── minimal.json     # just preview, top tab nav
+├── palettes/            # visual identity
+│   ├── midnight.json    # dark blue
+│   ├── matrix.json      # green-on-black
+│   ├── paper.json       # light
+│   └── sunset.json      # warm orange
+├── midnight.json        # theme = layout + palette
+├── matrix.json
+├── linktree.json        # linktree layout + midnight palette
+├── linktree-matrix.json # linktree layout + matrix palette
+├── minimal.json
+├── paper.json
+└── sunset.json
+```
 
-2. Edit the colors, fonts, and effects in `themes/my-theme.json`.
+## Creating a Theme
 
-3. Run the dev server with your theme:
-   ```
-   node scripts/dev.mjs --theme my-theme
-   ```
-
-4. Build a static bundle with your theme:
-   ```
-   node scripts/build.mjs --theme my-theme
-   ```
-
-## Schema
-
-A theme file has four sections: **colors**, **fonts**, **particles**, and **glow**.
-
-### Required fields
+A theme file just references a layout and a palette:
 
 ```json
 {
-  "name": "my-theme",          // kebab-case identifier
-  "label": "My Theme",         // human-readable name
-  "colors": { ... },           // all color values (see below)
-  "fonts": { ... }             // font definitions
+  "name": "my-theme",
+  "label": "My Theme",
+  "layout": "terminal",
+  "palette": "midnight"
 }
 ```
 
-### `colors`
+That's it. The layout provides structure, the palette provides colors.
 
-All color values are CSS strings (hex like `#6cb6ff` or rgba like `rgba(108,182,255,.12)`).
+### With overrides
 
-| Field         | Used for                                      |
-|---------------|-----------------------------------------------|
-| `bg`          | Page background                               |
-| `window`      | Main panel background                         |
-| `windowAlt`   | Sidebar / terminal / status bar background    |
-| `text`        | Primary text                                  |
-| `muted`       | Secondary text (descriptions, terminal output)|
-| `mutedAlt`    | Tertiary text (labels, hints)                 |
-| `border`      | Primary borders                               |
-| `borderSoft`  | Subtle dividers (between entries)             |
-| `accent`      | Primary accent — prompt, links, active states |
-| `accentSoft`  | Accent background tint (use rgba)             |
-| `hover`       | Hover background tint (use rgba)              |
-
-### `fonts`
+You can override specific fields from the layout or palette:
 
 ```json
-"fonts": {
-  "mono": {
-    "family": "'JetBrains Mono', monospace",
-    "url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+{
+  "name": "compact-matrix",
+  "label": "Compact Matrix",
+  "layout": "terminal",
+  "palette": "matrix",
+  "overrides": {
+    "layout": { "density": "compact" },
+    "features": { "game": false }
   }
 }
 ```
 
-- `family` — any CSS `font-family` value
-- `url` — Google Fonts URL or empty string for system fonts
+## Creating a Layout
 
-### `particles` (optional)
+Layouts live in `themes/layouts/`. They define:
 
-Background network animation via [tsParticles](https://particles.js.org/). Omit or set `"enabled": false` to disable.
+| Field | What it controls |
+|-------|-----------------|
+| `features` | Toggle UI components on/off |
+| `layout` | Mode, dimensions, density |
+| `content` | How markdown is rendered |
+| `typography` | Font size, line height, letter spacing |
+| `css` | Arbitrary CSS (escape hatch) |
 
 ```json
-"particles": {
-  "enabled": true,
-  "count": 70,              // number of nodes
-  "colors": ["#6cb6ff", "#8b949e", "#ffffff"],
-  "linkColor": "#6cb6ff",   // edge color
-  "linkOpacity": 0.18,
-  "linkDistance": 140,      // max distance for edges
-  "speed": 0.6,             // node drift speed
-  "size": 2                 // max node radius
+{
+  "name": "linktree",
+  "label": "Linktree",
+  "features": {
+    "terminal": false, "sidebar": false, "game": false,
+    "statusBar": false, "quickCommands": false, "ownerLinks": false, "windowBar": false
+  },
+  "layout": {
+    "mode": "linktree",
+    "maxWidth": "480px",
+    "borderRadius": "0px"
+  },
+  "content": { "render": "links" },
+  "css": "..."
 }
 ```
 
-### `glow` (optional)
+### Layout modes
 
-Ambient radial gradient overlays for depth. Omit or set `"enabled": false` to disable.
+| Mode | Description |
+|------|-------------|
+| `terminal` | Full layout: sidebar + preview + bottom terminal |
+| `linktree` | Centered card, section buttons on home, back button on sections |
+| `minimal` | Just the preview panel with top tab nav |
+
+### Feature toggles
+
+Disabled components are never mounted in the DOM:
 
 ```json
-"glow": {
-  "enabled": true,
-  "layers": [
-    {
-      "position": "top left",        // CSS position keyword
-      "color": "rgba(108,182,255,.12)",
-      "size": "35%"                   // spread radius
-    },
-    {
-      "position": "bottom right",
-      "color": "rgba(255,255,255,.05)",
-      "size": "45%"
-    }
-  ]
+"features": {
+  "terminal": false,      // hide the bottom terminal
+  "sidebar": false,        // hide the left nav
+  "game": false,           // disable the game entirely
+  "particles": true,       // keep background animation
+  "statusBar": false,      // hide keyboard hints
+  "quickCommands": false,  // hide sidebar quick cmds
+  "ownerLinks": true,      // show github/linkedin/email
+  "windowBar": true         // show the window title bar
 }
 ```
 
-## Full Example
+### Content render modes
+
+| Mode | What it does |
+|------|-------------|
+| `markdown` | Full rendered markdown (headings, paragraphs, lists) |
+| `links` | Extracts headings + links into button stack (linktree style) |
+| `raw` | Plain text, no styling |
+
+### The `css` escape hatch
+
+Any string in `css` is injected as a `<style>` tag after base CSS. Use this for anything the schema doesn't cover:
+
+```json
+"css": "[data-layout=\"linktree\"] .link-btn { border-radius: 16px; }"
+```
+
+## Creating a Palette
+
+Palettes live in `themes/palettes/`. They define:
+
+| Field | What it controls |
+|-------|-----------------|
+| `colors` | All color values (bg, window, text, accent, etc.) |
+| `fonts` | Font family + Google Fonts URL |
+| `particles` | tsParticles background config |
+| `glow` | Ambient radial gradient overlays |
 
 ```json
 {
@@ -116,46 +145,47 @@ Ambient radial gradient overlays for depth. Omit or set `"enabled": false` to di
   "colors": {
     "bg": "#1a0f0a",
     "window": "#2a1a14",
-    "windowAlt": "#1f120c",
-    "text": "#fff5e6",
-    "muted": "#c4a88a",
-    "mutedAlt": "#8a7466",
-    "border": "#3d2820",
-    "borderSoft": "#2e1c14",
     "accent": "#ff8c42",
-    "accentSoft": "rgba(255,140,66,.12)",
-    "hover": "rgba(255,140,66,.10)"
+    ...
   },
   "fonts": {
-    "mono": {
-      "family": "'JetBrains Mono', monospace",
-      "url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
-    }
+    "mono": { "family": "'JetBrains Mono', monospace", "url": "..." }
   },
-  "particles": {
-    "enabled": true,
-    "count": 60,
-    "colors": ["#ff8c42", "#c4a88a"],
-    "linkColor": "#ff8c42",
-    "linkOpacity": 0.15,
-    "linkDistance": 130,
-    "speed": 0.5,
-    "size": 2
-  },
-  "glow": {
-    "enabled": true,
-    "layers": [
-      { "position": "top right",   "color": "rgba(255,140,66,.15)", "size": "40%" },
-      { "position": "bottom left", "color": "rgba(255,69,0,.08)",   "size": "35%" }
-    ]
-  }
+  "particles": { "enabled": true, "count": 60, ... },
+  "glow": { "enabled": true, "layers": [...] }
 }
 ```
 
-## Tips
+### Color fields
 
-- **Contrast**: ensure `text` has at least 4.5:1 contrast against `bg` and `window`.
-- `accentSoft` and `hover` should be low-opacity rgba versions of `accent`.
-- The `border` color should be subtle — it separates panels, not draw attention.
-- Test with `node scripts/dev.mjs --theme my-theme` and resize the window.
-- The schema is defined in `theme.schema.json` — use it for validation in your editor.
+| Field | Used for |
+|-------|----------|
+| `bg` | Page background |
+| `window` | Main panel background |
+| `windowAlt` | Sidebar / terminal background |
+| `text` | Primary text |
+| `muted` | Secondary text |
+| `mutedAlt` | Tertiary text / labels |
+| `border` | Primary borders |
+| `borderSoft` | Subtle dividers |
+| `accent` | Prompt, links, active states |
+| `accentSoft` | Accent background tint (rgba) |
+| `hover` | Hover background tint (rgba) |
+
+## Linktree Navigation
+
+The linktree layout works as a proper navigable page:
+
+1. **Home** shows your name + section buttons (one per `.md` file)
+2. **Click a section** → opens that section's content (rendered as link buttons via `content.render: "links"`)
+3. **Back button** → returns to home
+
+No terminal needed — pure click navigation. Same content files as the terminal layout.
+
+## Schemas
+
+- [`theme.schema.json`](../theme.schema.json) — theme files
+- [`layout.schema.json`](../layout.schema.json) — layout files
+- [`palette.schema.json`](../palette.schema.json) — palette files
+
+Use these for editor validation.

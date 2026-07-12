@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Palette",
+  "description": "Visual identity: colors, fonts, particles, glow",
+  "type": "object",
+  "required": ["name", "colors", "fonts"],
+  "properties": {
+    "name":  { "type": "string" },
+    "label": { "type": "string" },
+    "colors": {
+      "type": "object",
+      "required": ["bg", "window", "windowAlt", "text", "muted", "mutedAlt", "border", "borderSoft", "accent", "accentSoft", "hover"],
+      "properties": {
+        "bg":         { "type": "string" },
+        "window":     { "type": "string" },
+        "windowAlt":  { "type": "string" },
+        "text":       { "type": "string" },
+        "muted":      { "type": "string" },
+        "mutedAlt":   { "type": "string" },
+        "border":     { "type": "string" },
+        "borderSoft": { "type": "string" },
+        "accent":     { "type": "string" },
+        "accentSoft": { "type": "string" },
+        "hover":      { "type": "string" }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "required": ["mono"],
+      "properties": {
+        "mono": {
+          "type": "object",
+          "required": ["family"],
+          "properties": {
+            "family": { "type": "string" },
+            "url":    { "type": "string" }
+          }
+        }
+      }
+    },
+    "particles": {
+      "type": "object",
+      "properties": {
+        "enabled":      { "type": "boolean" },
+        "count":        { "type": "integer" },
+        "colors":       { "type": "array", "items": { "type": "string" } },
+        "linkColor":    { "type": "string" },
+        "linkOpacity":  { "type": "number" },
+        "linkDistance": { "type": "integer" },
+        "speed":        { "type": "number" },
+        "size":         { "type": "integer" }
+      }
+    },
+    "glow": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["position", "color", "size"],
+            "properties": {
+              "position": { "type": "string" },
+              "color":    { "type": "string" },
+              "size":     { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

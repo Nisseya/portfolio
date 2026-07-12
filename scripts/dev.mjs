@@ -89,12 +89,38 @@ async function loadOwner() {
     }
 }
 
-/* ---------- theme loading ---------- */
+/* ---------- theme loading (layout + palette resolution) ---------- */
+
+async function loadJSON(dir, name) {
+    const filePath = path.join(ROOT, "themes", dir, `${name}.json`);
+    const text = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(text);
+}
+
+async function resolveTheme(theme) {
+    const layout  = theme.layout  ? await loadJSON("layouts",  theme.layout)  : {};
+    const palette = theme.palette ? await loadJSON("palettes", theme.palette) : {};
+    return {
+        name:  theme.name,
+        label: theme.label,
+        colors:    palette.colors    || {},
+        fonts:     palette.fonts     || { mono: { family: "monospace" } },
+        particles: palette.particles || { enabled: false },
+        glow:      palette.glow      || { enabled: false },
+        layout:     layout.layout     || { mode: "terminal" },
+        features:   layout.features   || {},
+        content:    layout.content    || { render: "markdown" },
+        typography: layout.typography || {},
+        css:        layout.css        || "",
+        ...theme.overrides || {},
+    };
+}
 
 async function loadTheme(name) {
     const themePath = path.join(ROOT, "themes", `${name}.json`);
     const text = await fs.readFile(themePath, "utf-8");
-    return JSON.parse(text);
+    const theme = JSON.parse(text);
+    return resolveTheme(theme);
 }
 
 /* ---------- manifest builder ---------- */

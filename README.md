@@ -1,8 +1,6 @@
 # Portfolio Terminal
 
-A terminal-style portfolio with a 2D platformer game, markdown-driven content, and swappable themes.
-
-![layout](https://img.shields.io/badge/layout-sidebar%20%2B%20preview%20%2B%20terminal-blue)
+A terminal-style portfolio with markdown-driven content, a 2D platformer game, and swappable themes built from reusable layouts and palettes.
 
 ## Quick Start
 
@@ -26,9 +24,10 @@ npm run dev
 ### Development
 
 ```bash
-npm run dev                              # default theme (midnight)
-npm run dev -- --theme matrix            # matrix theme
-npm run dev -- --theme matrix --port 8080
+npm run dev                                    # default theme (midnight)
+npm run dev -- --theme linktree                # linktree layout
+npm run dev -- --theme matrix                  # matrix palette
+npm run dev -- --theme linktree-matrix --port 8080
 ```
 
 The dev server provides:
@@ -39,44 +38,102 @@ The dev server provides:
 ### Build
 
 ```bash
-npm run build                            # default theme → dist/index.html
-npm run build -- --theme matrix          # matrix theme
-npm run build -- --out public            # custom output dir
+npm run build                                  # default theme → dist/index.html
+npm run build -- --theme linktree              # linktree layout
+npm run build -- --out public                  # custom output dir
 ```
 
 Output is a single self-contained `dist/index.html` — no server needed. Deploy it anywhere (GitHub Pages, Netlify, S3, or just open it in a browser).
+
+## Themes
+
+A **theme** is a combination of a **layout** (structure) and a **palette** (colors/fonts/effects). This separation lets you mix and match.
+
+### Built-in themes
+
+| Theme | Layout | Palette | Description |
+|-------|--------|---------|-------------|
+| `midnight` | terminal | midnight | Dark blue, full terminal |
+| `matrix` | terminal | matrix | Green-on-black |
+| `paper` | terminal | paper | Light theme |
+| `sunset` | terminal | sunset | Warm orange |
+| `linktree` | linktree | midnight | Centered card, section buttons |
+| `linktree-matrix` | linktree | matrix | Linktree with matrix colors |
+| `minimal` | minimal | midnight | Clean reading mode |
+
+### Layouts
+
+| Layout | Description |
+|--------|-------------|
+| `terminal` | Sidebar + preview + bottom terminal with command input |
+| `linktree` | Centered card, section buttons on home, back button on sections |
+| `minimal` | Just the preview panel with top tab nav |
+
+### Palettes
+
+| Palette | Vibe |
+|---------|------|
+| `midnight` | Dark blue (default) |
+| `matrix` | Green-on-black |
+| `paper` | Light |
+| `sunset` | Warm orange |
+
+### Creating a theme
+
+```json
+// themes/my-theme.json
+{
+  "name": "my-theme",
+  "label": "My Theme",
+  "layout": "terminal",
+  "palette": "sunset"
+}
+```
+
+That's it — the layout provides structure, the palette provides colors. See [`docs/themes.md`](docs/themes.md) for the full guide including overrides, custom layouts, and custom palettes.
 
 ## Project Structure
 
 ```
 portfolio/
-├── content/              # your content (gitignored — copy from content-example/)
-│   ├── owner.json        # name, role, social links
-│   ├── home.md           # landing page
+├── content/                  # your content (gitignored — copy from content-example/)
+│   ├── owner.json            # name, role, social links
+│   ├── home.md               # landing page
 │   ├── projects.md
 │   └── ...
-├── content-example/      # example content (tracked in git)
-├── themes/               # JSON theme files
-│   ├── midnight.json     # default dark theme
-│   ├── matrix.json       # green-on-black
-│   └── paper.json        # light theme
-├── src/                  # app modules (ES modules)
-│   ├── main.js           # entry point
-│   ├── markdown.js       # frontmatter + markdown renderer
-│   ├── terminal.js       # terminal UX (history, tab completion)
-│   ├── navigation.js     # preview transitions
-│   ├── theme.js          # apply theme to DOM
-│   ├── particles.js      # tsParticles background
-│   └── game.js           # 2D platformer
+├── content-example/          # example content (tracked in git)
+├── themes/
+│   ├── layouts/              # structural definitions
+│   │   ├── terminal.json     # sidebar + preview + terminal
+│   │   ├── linktree.json     # centered card, section buttons
+│   │   └── minimal.json      # just preview, top tabs
+│   ├── palettes/             # visual identity
+│   │   ├── midnight.json     # dark blue
+│   │   ├── matrix.json       # green-on-black
+│   │   ├── paper.json        # light
+│   │   └── sunset.json       # warm orange
+│   ├── midnight.json         # theme = layout + palette
+│   ├── linktree.json
+│   └── ...
+├── src/                      # app modules (ES modules)
+│   ├── main.js               # entry point
+│   ├── markdown.js           # frontmatter + markdown renderer + links mode
+│   ├── terminal.js           # terminal UX (history, tab completion)
+│   ├── navigation.js         # preview transitions
+│   ├── theme.js              # resolve + apply theme to DOM
+│   ├── particles.js          # tsParticles background
+│   └── game.js               # 2D platformer
 ├── styles/
-│   └── base.css          # theme-agnostic layout (CSS variables)
+│   └── base.css              # theme-agnostic layout (CSS variables)
 ├── scripts/
-│   ├── dev.mjs           # dev server + live reload
-│   └── build.mjs         # static bundle builder (esbuild)
+│   ├── dev.mjs               # dev server + live reload
+│   └── build.mjs             # static bundle builder (esbuild)
 ├── docs/
-│   └── themes.md         # how to build a theme
-├── theme.schema.json     # formal theme schema (for editor validation)
-├── index.html            # entry HTML
+│   └── themes.md             # themes, layouts & palettes guide
+├── theme.schema.json         # theme schema (layout + palette refs)
+├── layout.schema.json        # layout schema
+├── palette.schema.json       # palette schema
+├── index.html                # entry HTML
 └── package.json
 ```
 
@@ -115,7 +172,7 @@ Content here. Supports **bold**, *italic*, `code`, [links](https://example.com),
 lists, blockquotes, and horizontal rules.
 ```
 
-- `label` — shown in the sidebar and terminal `ls` output
+- `label` — shown in the sidebar, terminal `ls` output, and linktree section buttons
 - `order` — sort position (lower = first)
 
 The file name becomes the section ID (e.g. `blog.md` → `open blog`).
@@ -133,15 +190,9 @@ The file name becomes the section ID (e.g. `blog.md` → `open blog`).
 | `> quote` | blockquote |
 | `---` | horizontal rule |
 
-## Adding a Theme
-
-See [`docs/themes.md`](docs/themes.md) for the full guide. Quick version:
-
-1. Copy a theme: `cp themes/midnight.json themes/my-theme.json`
-2. Edit colors/fonts/particles
-3. Run: `npm run dev -- --theme my-theme`
-
 ## Terminal Commands
+
+Available in the `terminal` layout (not in linktree/minimal):
 
 | Command | Description |
 |---------|-------------|
@@ -174,8 +225,10 @@ The built file is fully self-contained (CSS, JS, theme, and content inlined). No
 
 ## Documentation
 
-- [Theme building guide](docs/themes.md)
+- [Themes, Layouts & Palettes guide](docs/themes.md)
 - [Theme schema](theme.schema.json)
+- [Layout schema](layout.schema.json)
+- [Palette schema](palette.schema.json)
 
 ## Requirements
 

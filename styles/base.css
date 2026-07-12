@@ -16,6 +16,9 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    font-size: var(--font-size, 15px);
+    line-height: var(--line-height, 1.7);
+    letter-spacing: var(--letter-spacing, 0);
 }
 
 /* ---- background layers ---- */
@@ -39,15 +42,15 @@ body {
 main {
     position: relative;
     z-index: 2;
-    width: min(1280px, 95vw);
-    height: min(820px, 94vh);
+    width: min(var(--max-width, 1280px), 95vw);
+    height: min(var(--max-height, 820px), 94vh);
 }
 
 .terminal {
     height: 100%;
     background: var(--window);
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: var(--radius, 18px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -95,7 +98,7 @@ main {
 /* sidebar */
 
 .sidebar {
-    width: 220px; flex-shrink: 0;
+    width: var(--sidebar-width, 220px); flex-shrink: 0;
     display: flex; flex-direction: column;
     border-right: 1px solid var(--border);
     background: var(--window-alt);
@@ -248,7 +251,7 @@ main {
 
 .terminal-panel {
     flex-shrink: 0;
-    height: 200px;
+    height: var(--terminal-height, 200px);
     display: flex; flex-direction: column;
     border-top: 1px solid var(--border);
     background: var(--window-alt);
@@ -359,3 +362,27 @@ main {
     .owner-links { display: none; }
     .terminal-panel { height: 180px; }
 }
+
+/* =================================================
+   LAYOUT MODES
+   Layout-specific CSS lives in themes/layouts/<name>.json
+   under the "css" field. base.css only provides the
+   feature-toggle fallbacks below.
+================================================= */
+
+/* ---- feature toggles (CSS-level hiding as fallback) ---- */
+/* JS removes elements, but this catches anything missed */
+
+[data-feature-windowbar="off"] .window-bar { display: none; }
+[data-feature-sidebar="off"] .sidebar { display: none; }
+[data-feature-terminal="off"] .terminal-panel { display: none; }
+[data-feature-statusbar="off"] .status-bar { display: none; }
+[data-feature-ownerlinks="off"] .owner-links { display: none; }
+[data-feature-quickcommands="off"] .quick-cmds { display: none; }
+
+/* ---- density ---- */
+
+[data-density="compact"] .preview-content { padding: 24px 28px; }
+[data-density="compact"] .terminal-output { padding: 10px 18px; font-size: .82rem; }
+[data-density="compact"] .sidebar-header { padding: 12px 16px 6px; }
+[data-density="compact"] .nav-item { padding: 6px 10px; font-size: .8rem; }

@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Layout",
+  "description": "Structural definition: features, dimensions, content render mode, typography, CSS",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name":  { "type": "string" },
+    "label": { "type": "string" },
+    "features": {
+      "type": "object",
+      "properties": {
+        "terminal":      { "type": "boolean" },
+        "sidebar":       { "type": "boolean" },
+        "game":          { "type": "boolean" },
+        "particles":     { "type": "boolean" },
+        "statusBar":     { "type": "boolean" },
+        "quickCommands": { "type": "boolean" },
+        "ownerLinks":    { "type": "boolean" },
+        "windowBar":     { "type": "boolean" }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "mode":           { "type": "string", "enum": ["terminal", "linktree", "minimal"] },
+        "sidebarWidth":   { "type": "string" },
+        "terminalHeight": { "type": "string" },
+        "borderRadius":   { "type": "string" },
+        "maxWidth":       { "type": "string" },
+        "maxHeight":      { "type": "string" },
+        "density":        { "type": "string", "enum": ["compact", "normal", "spacious"] }
+      }
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "render":      { "type": "string", "enum": ["markdown", "links", "raw"] },
+        "showLabels":  { "type": "boolean" },
+        "showOrder":   { "type": "boolean" }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "baseSize":      { "type": "string" },
+        "headingScale":  { "type": "string" },
+        "lineHeight":    { "type": "string" },
+        "letterSpacing": { "type": "string" }
+      }
+    },
+    "css": { "type": "string", "description": "Arbitrary CSS injected into the page" }
+  }
+}

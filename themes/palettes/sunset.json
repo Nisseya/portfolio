@@ -1,0 +1,40 @@
+{
+  "name": "sunset",
+  "label": "Sunset",
+  "colors": {
+    "bg": "#1a0f0a",
+    "window": "#2a1a14",
+    "windowAlt": "#1f120c",
+    "text": "#fff5e6",
+    "muted": "#c4a88a",
+    "mutedAlt": "#8a7466",
+    "border": "#3d2820",
+    "borderSoft": "#2e1c14",
+    "accent": "#ff8c42",
+    "accentSoft": "rgba(255,140,66,.12)",
+    "hover": "rgba(255,140,66,.10)"
+  },
+  "fonts": {
+    "mono": {
+      "family": "'JetBrains Mono', monospace",
+      "url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+    }
+  },
+  "particles": {
+    "enabled": true,
+    "count": 60,
+    "colors": ["#ff8c42", "#c4a88a"],
+    "linkColor": "#ff8c42",
+    "linkOpacity": 0.15,
+    "linkDistance": 130,
+    "speed": 0.5,
+    "size": 2
+  },
+  "glow": {
+    "enabled": true,
+    "layers": [
+      { "position": "top right",   "color": "rgba(255,140,66,.15)", "size": "40%" },
+      { "position": "bottom left", "color": "rgba(255,69,0,.08)",   "size": "35%" }
+    ]
+  }
+}

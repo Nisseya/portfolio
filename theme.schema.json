@@ -1,82 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Portfolio Theme",
-  "description": "Theme definition for the portfolio terminal interface",
+  "description": "A theme combines a layout and a palette. Layouts define structure; palettes define colors/fonts/effects.",
   "type": "object",
-  "required": ["name", "colors", "fonts"],
+  "required": ["name", "layout", "palette"],
   "properties": {
-    "name": {
-      "type": "string",
-      "description": "Unique theme identifier (kebab-case)"
-    },
-    "label": {
-      "type": "string",
-      "description": "Human-readable name shown in theme picker"
-    },
-    "colors": {
+    "name":    { "type": "string", "description": "Unique theme identifier (kebab-case)" },
+    "label":   { "type": "string", "description": "Human-readable name" },
+    "layout":  { "type": "string", "description": "Name of layout in themes/layouts/" },
+    "palette": { "type": "string", "description": "Name of palette in themes/palettes/" },
+    "overrides": {
       "type": "object",
-      "required": ["bg", "window", "windowAlt", "text", "muted", "mutedAlt", "border", "borderSoft", "accent", "accentSoft", "hover"],
-      "description": "All colors as hex or rgba strings",
-      "properties": {
-        "bg":         { "type": "string", "description": "Page background" },
-        "window":     { "type": "string", "description": "Main panel background" },
-        "windowAlt":  { "type": "string", "description": "Secondary panel / sidebar background" },
-        "text":       { "type": "string", "description": "Primary text" },
-        "muted":      { "type": "string", "description": "Secondary text" },
-        "mutedAlt":   { "type": "string", "description": "Tertiary text / labels" },
-        "border":     { "type": "string", "description": "Primary border color" },
-        "borderSoft": { "type": "string", "description": "Subtle divider lines" },
-        "accent":     { "type": "string", "description": "Primary accent (links, prompt, active states)" },
-        "accentSoft": { "type": "string", "description": "Accent background tint (rgba)" },
-        "hover":      { "type": "string", "description": "Hover background tint (rgba)" }
-      }
-    },
-    "fonts": {
-      "type": "object",
-      "required": ["mono"],
-      "properties": {
-        "mono": {
-          "type": "object",
-          "required": ["family"],
-          "properties": {
-            "family":  { "type": "string", "description": "CSS font-family value" },
-            "url":     { "type": "string", "description": "Google Fonts URL or empty for system fonts" }
-          }
-        }
-      }
-    },
-    "particles": {
-      "type": "object",
-      "description": "tsParticles background config. Omit to disable.",
-      "properties": {
-        "enabled": { "type": "boolean", "default": true },
-        "count":   { "type": "integer", "default": 70 },
-        "colors":  { "type": "array", "items": { "type": "string" } },
-        "linkColor":  { "type": "string" },
-        "linkOpacity":{ "type": "number" },
-        "linkDistance":{ "type": "integer" },
-        "speed":   { "type": "number" },
-        "size":    { "type": "integer" }
-      }
-    },
-    "glow": {
-      "type": "object",
-      "description": "Ambient radial gradient overlays. Omit to disable.",
-      "properties": {
-        "enabled": { "type": "boolean", "default": true },
-        "layers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["position", "color", "size"],
-            "properties": {
-              "position": { "type": "string", "description": "CSS position, e.g. 'top left'" },
-              "color":    { "type": "string", "description": "rgba color" },
-              "size":     { "type": "string", "description": "CSS size, e.g. '35%'" }
-            }
-          }
-        }
-      }
+      "description": "Optional overrides merged on top of layout + palette"
     }
   }
 }

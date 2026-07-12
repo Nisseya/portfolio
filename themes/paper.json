@@ -1,40 +1,6 @@
 {
   "name": "paper",
   "label": "Paper",
-  "colors": {
-    "bg": "#f5f7fa",
-    "window": "#ffffff",
-    "windowAlt": "#f0f2f5",
-    "text": "#0d1117",
-    "muted": "#57606a",
-    "mutedAlt": "#8b949e",
-    "border": "#d0d7de",
-    "borderSoft": "#e1e4e8",
-    "accent": "#0969da",
-    "accentSoft": "rgba(9,105,218,.12)",
-    "hover": "rgba(9,105,218,.08)"
-  },
-  "fonts": {
-    "mono": {
-      "family": "'JetBrains Mono', monospace",
-      "url": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
-    }
-  },
-  "particles": {
-    "enabled": true,
-    "count": 50,
-    "colors": ["#0969da", "#8b949e", "#0d1117"],
-    "linkColor": "#0969da",
-    "linkOpacity": 0.12,
-    "linkDistance": 150,
-    "speed": 0.4,
-    "size": 2
-  },
-  "glow": {
-    "enabled": true,
-    "layers": [
-      { "position": "top left",     "color": "rgba(9,105,218,.08)",  "size": "30%" },
-      { "position": "bottom right",  "color": "rgba(0,0,0,.03)",      "size": "40%" }
-    ]
-  }
+  "layout": "terminal",
+  "palette": "paper"
 }

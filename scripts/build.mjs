@@ -35,6 +35,38 @@ async function readFile(rel) {
     return fs.readFile(path.join(ROOT, rel), "utf-8");
 }
 
+/* ---------- theme loading (layout + palette resolution) ---------- */
+
+async function loadJSON(dir, name) {
+    const text = await readFile(`themes/${dir}/${name}.json`);
+    return JSON.parse(text);
+}
+
+async function resolveTheme(theme) {
+    const layout  = theme.layout  ? await loadJSON("layouts",  theme.layout)  : {};
+    const palette = theme.palette ? await loadJSON("palettes", theme.palette) : {};
+    return {
+        name:  theme.name,
+        label: theme.label,
+        colors:    palette.colors    || {},
+        fonts:     palette.fonts     || { mono: { family: "monospace" } },
+        particles: palette.particles || { enabled: false },
+        glow:      palette.glow      || { enabled: false },
+        layout:     layout.layout     || { mode: "terminal" },
+        features:   layout.features   || {},
+        content:    layout.content    || { render: "markdown" },
+        typography: layout.typography || {},
+        css:        layout.css        || "",
+        ...theme.overrides || {},
+    };
+}
+
+async function loadTheme(name) {
+    const text = await readFile(`themes/${name}.json`);
+    const theme = JSON.parse(text);
+    return resolveTheme(theme);
+}
+
 async function discoverContent() {
     const contentDir = path.join(ROOT, "content");
     const files = (await fs.readdir(contentDir)).filter(f => f.endsWith(".md"));
@@ -66,19 +98,19 @@ async function discoverContent() {
 async function build() {
     console.log(`\n  📦 building with theme: ${THEME_NAME}\n`);
 
-    const [sections, owner, theme] = await Promise.all([
+    const [sections, owner] = await Promise.all([
         discoverContent(),
         readFile("content/owner.json").then(JSON.parse).catch(() => ({
             name: "Yassine Hadi",
             role: "AI Engineer • Rust • ML • Data Engineering",
             links: [
-                { label: "github",   url: "https://github.com/" },
-                { label: "linkedin", url: "https://www.linkedin.com/" },
-                { label: "email",    url: "mailto:you@example.com" }
+                { label: "github",   "url": "https://github.com/" },
+                { label: "linkedin", "url": "https://www.linkedin.com/" },
+                { label: "email",    "url": "mailto:you@example.com" }
             ]
-        })),
-        readFile(`themes/${THEME_NAME}.json`).then(JSON.parse)
+        }))
     ]);
+    const theme = await loadTheme(THEME_NAME);
 
     // bundle JS with esbuild
     console.log("  → bundling JS modules...");
@@ -116,8 +148,22 @@ async function build() {
     --glow-layers: ${theme.glow?.enabled && theme.glow.layers?.length
         ? theme.glow.layers.map(l => `radial-gradient(circle at ${l.position}, ${l.color}, transparent ${l.size})`).join(", ")
         : "none"};
+    --font-size: ${theme.typography?.baseSize || "15px"};
+    --line-height: ${theme.typography?.lineHeight || "1.7"};
+    --letter-spacing: ${theme.typography?.letterSpacing || "0"};
+    --sidebar-width: ${theme.layout?.sidebarWidth || "220px"};
+    --terminal-height: ${theme.layout?.terminalHeight || "200px"};
+    --radius: ${theme.layout?.borderRadius || "18px"};
+    --max-width: ${theme.layout?.maxWidth || "1280px"};
+    --max-height: ${theme.layout?.maxHeight || "820px"};
 }
 `;
+
+    // data attributes
+    const features = theme.features || {};
+    const featureAttrs = Object.entries(features).map(([k, v]) => `data-feature-${k}="${v ? "on" : "off"}"`).join(" ");
+    const layoutAttr = `data-layout="${theme.layout?.mode || "terminal"}"`;
+    const densityAttr = `data-density="${theme.layout?.density || "normal"}"`;
 
     // build manifest + inline content
     console.log("  → inlining content...");
@@ -140,9 +186,9 @@ async function build() {
         finalHTML += `    <link rel="stylesheet" href="${theme.fonts.mono.url}">\n`;
     }
 
-    finalHTML += `    <style>\n${themeCSS}\n${css}\n    </style>\n`;
+    finalHTML += `    <style>\n${themeCSS}\n${css}\n${theme.css || ""}\n    </style>\n`;
     finalHTML += `</head>
-<body>
+<body ${layoutAttr} ${densityAttr} ${featureAttrs}>
 
 <div id="tsparticles"></div>
 <div class="noise"></div>

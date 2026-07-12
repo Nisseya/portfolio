@@ -1,0 +1,34 @@
+{
+  "name": "minimal",
+  "label": "Minimal",
+  "features": {
+    "terminal": false,
+    "sidebar": false,
+    "game": false,
+    "particles": true,
+    "statusBar": false,
+    "quickCommands": false,
+    "ownerLinks": true,
+    "windowBar": true
+  },
+  "layout": {
+    "mode": "minimal",
+    "sidebarWidth": "0px",
+    "terminalHeight": "0px",
+    "borderRadius": "0px",
+    "maxWidth": "720px",
+    "maxHeight": "90vh",
+    "density": "spacious"
+  },
+  "content": {
+    "render": "markdown",
+    "showLabels": true,
+    "showOrder": false
+  },
+  "typography": {
+    "baseSize": "16px",
+    "lineHeight": "1.8",
+    "letterSpacing": "0.01em"
+  },
+  "css": "/* minimal overrides */\n[data-layout=\"minimal\"] .sidebar { display: none !important; }\n[data-layout=\"minimal\"] .terminal-panel,\n[data-layout=\"minimal\"] .status-bar { display: none !important; }\n[data-layout=\"minimal\"] .preview-panel { border-top: 1px solid var(--border); }\n[data-layout=\"minimal\"] .window-bar { height: auto; padding: 12px 22px; flex-wrap: wrap; }\n[data-layout=\"minimal\"] .preview-content { padding: 56px 48px; }\n[data-layout=\"minimal\"] .preview-content h1 { font-size: 2.2rem; }"
+}

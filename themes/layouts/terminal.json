@@ -1,0 +1,34 @@
+{
+  "name": "terminal",
+  "label": "Terminal",
+  "features": {
+    "terminal": true,
+    "sidebar": true,
+    "game": true,
+    "particles": true,
+    "statusBar": true,
+    "quickCommands": true,
+    "ownerLinks": true,
+    "windowBar": true
+  },
+  "layout": {
+    "mode": "terminal",
+    "sidebarWidth": "220px",
+    "terminalHeight": "200px",
+    "borderRadius": "18px",
+    "maxWidth": "1280px",
+    "maxHeight": "820px",
+    "density": "normal"
+  },
+  "content": {
+    "render": "markdown",
+    "showLabels": true,
+    "showOrder": true
+  },
+  "typography": {
+    "baseSize": "15px",
+    "lineHeight": "1.7",
+    "letterSpacing": "0"
+  },
+  "css": ""
+}
