@@ -5,7 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "deploy": "node scripts/deploy.mjs",
+    "portfolio": "node scripts/portfolio.mjs",
+    "test": "node --test test/"
+  },
+  "bin": {
+    "portfolio": "./scripts/portfolio.mjs"
   },
   "engines": {
     "node": ">=18"

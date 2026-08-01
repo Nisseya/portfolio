@@ -53,8 +53,8 @@ const DEFAULT_LAYOUT = {
     sidebarWidth: "220px",
     terminalHeight: "200px",
     borderRadius: "18px",
-    maxWidth: "1280px",
-    maxHeight: "820px",
+    maxWidth: "1600px",
+    maxHeight: "900px",
     density: "normal",
 };
 

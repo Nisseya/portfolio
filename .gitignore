@@ -4,6 +4,12 @@ node_modules/
 # build output
 dist/
 
+# deploy config (personal tokens, subpaths, etc.)
+deploy.config.json
+
+# wrangler (if used outside the deploy script)
+.wrangler/
+
 # your personal content (copy from content-example/)
 content/*
 !content/.gitkeep

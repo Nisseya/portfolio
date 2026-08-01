@@ -154,8 +154,8 @@ async function build() {
     --sidebar-width: ${theme.layout?.sidebarWidth || "220px"};
     --terminal-height: ${theme.layout?.terminalHeight || "200px"};
     --radius: ${theme.layout?.borderRadius || "18px"};
-    --max-width: ${theme.layout?.maxWidth || "1280px"};
-    --max-height: ${theme.layout?.maxHeight || "820px"};
+    --max-width: ${theme.layout?.maxWidth || "1600px"};
+    --max-height: ${theme.layout?.maxHeight || "900px"};
 }
 `;
 

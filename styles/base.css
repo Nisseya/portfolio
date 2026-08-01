@@ -42,8 +42,8 @@ body {
 main {
     position: relative;
     z-index: 2;
-    width: min(var(--max-width, 1280px), 95vw);
-    height: min(var(--max-height, 820px), 94vh);
+    width: min(var(--max-width, 1600px), 96vw);
+    height: min(var(--max-height, 900px), 95vh);
 }
 
 .terminal {
@@ -160,7 +160,7 @@ main {
 
 .preview-content {
     flex: 1; min-height: 0;
-    padding: 44px 48px;
+    padding: 48px 64px;
     overflow-y: auto;
     transition: opacity .28s ease, transform .28s ease;
 }
@@ -233,7 +233,7 @@ main {
 
 .preview-content .home-hero .name { font-size: 3.4rem; font-weight: 700; line-height: 1.1; margin-bottom: 6px; }
 .preview-content .home-hero .role { color: var(--accent); font-size: 1.05rem; margin-bottom: 18px; }
-.preview-content .home-hero p { color: var(--muted); line-height: 1.9; max-width: 520px; }
+.preview-content .home-hero p { color: var(--muted); line-height: 1.9; }
 .preview-content .error { color: #ff6b6b; }
 
 /* game canvas */
