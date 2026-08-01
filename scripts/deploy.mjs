@@ -243,10 +243,12 @@ async function deployWithConfig(config, provider, providerConfig) {
 
     // ── 3b. Inject subpath into built HTML if needed ──
     const subpath = providerConfig.subpath;
-    if (subpath) {
-        process.stdout.write(`  → injecting <base href="${subpath}"> for subpath support...\n`);
+    const cleanSub = subpath ? subpath.replace(/^\/|\/$/g, "") : "";
+    if (cleanSub) {
+        const base = `/${cleanSub}/`;
+        process.stdout.write(`  → injecting <base href="${base}"> for subpath support...\n`);
         let html = readFileSync(join(BUILD_DIR, "index.html"), "utf-8");
-        const injected = injectBaseHref(html, subpath);
+        const injected = injectBaseHref(html, base);
         if (injected !== html) {
             writeFileSync(join(BUILD_DIR, "index.html"), injected);
         }

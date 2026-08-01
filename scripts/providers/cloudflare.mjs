@@ -7,6 +7,22 @@
 
 const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 
+import { createInterface } from "node:readline";
+import { stdin, stdout } from "node:process";
+
+async function confirm(prompt, fallback = false) {
+    const hint = fallback ? "[Y/n]" : "[y/N]";
+    return new Promise(resolve => {
+        const rl = createInterface({ input: stdin, output: stdout });
+        rl.question(`  ${prompt} ${hint} `, answer => {
+            rl.close();
+            const a = answer.trim().toLowerCase();
+            if (!a) return resolve(fallback);
+            resolve(a === "y" || a === "yes");
+        });
+    });
+}
+
 /**
  * @param {object} opts
  * @param {string} opts.apiToken
@@ -23,6 +39,10 @@ export async function deploy(opts) {
     if (!apiToken) throw new Error("Cloudflare API token is required");
     if (!accountId) throw new Error("Cloudflare Account ID is required");
     if (!projectName) throw new Error("Cloudflare project name is required");
+
+    // A subpath of "/" (root) means "no subpath" — serve at the domain root.
+    const clean = subpath ? subpath.replace(/^\/|\/$/g, "") : "";
+    const realSubpath = clean ? `/${clean}/` : "";
 
     const headers = {
         "Authorization": `Bearer ${apiToken}`,
@@ -96,12 +116,12 @@ export async function deploy(opts) {
         }
 
         // ── 1c. Ensure DNS CNAME record points to the Pages project ──
-        await ensureDnsRecord({ apiToken, domain, projectName, headers });
+        await ensureDnsRecord({ apiToken, accountId, domain, projectName, headers });
     }
 
-    // ── 1d. If a subpath is requested, deploy a routing Worker ──
-    if (subpath && domain) {
-        await deployRoutingWorker({ apiToken, accountId, domain, projectName, subpath, headers });
+    // ── 1d. If a real subpath is requested, deploy a routing Worker ──
+    if (realSubpath && domain) {
+        await deployRoutingWorker({ apiToken, accountId, domain, projectName, subpath: realSubpath, headers });
     }
 
     // ── 2. Read built file ──
@@ -111,9 +131,8 @@ export async function deploy(opts) {
     let html = readFileSync(join(buildDir, "index.html"), "utf-8");
 
     // inject <base> for subpath support
-    if (subpath) {
-        const clean = subpath.replace(/^\/|\/$/g, "");
-        const base = `/${clean}/`;
+    if (realSubpath) {
+        const base = realSubpath;
         if (!html.includes("<base")) {
             html = html.replace(
                 "<head>",
@@ -151,7 +170,7 @@ export async function deploy(opts) {
     const baseUrl = domain
         ? `https://${domain}`
         : (deployData.result?.url || `https://${projectName}.pages.dev`);
-    const url = subpath ? `${baseUrl}${subpath}` : baseUrl;
+    const url = realSubpath ? `${baseUrl}${realSubpath}` : baseUrl;
     return { url };
 }
 
@@ -159,7 +178,7 @@ export async function deploy(opts) {
  * Ensure a CNAME record exists pointing the domain at the Pages project.
  * Requires the domain's zone to be in the same Cloudflare account.
  */
-async function ensureDnsRecord({ apiToken, domain, projectName, headers }) {
+async function ensureDnsRecord({ apiToken, accountId, domain, projectName, headers }) {
     const target = `${projectName}.pages.dev`;
 
     // Find the zone for this domain
@@ -212,6 +231,53 @@ async function ensureDnsRecord({ apiToken, domain, projectName, headers }) {
 
     if (!createData.success) {
         const msg = createData.errors?.[0]?.message || "unknown error";
+
+        // A DNS record managed by a Worker already exists on this host.
+        // Offer to remove it (interactively) so the CNAME can be created.
+        if (/managed by Workers/i.test(msg)) {
+            process.stdout.write(`  ⚠  A Worker-managed DNS record already exists on ${domain}.\n`);
+            const ok = await confirm(
+                `  Remove it so the CNAME can point to ${target}?`,
+                false
+            );
+            if (ok) {
+                const removed = await removeWorkerManagedRecord({ apiToken, accountId, domain, projectName, zoneId, headers });
+                if (removed) {
+                    // Retry creating the CNAME once
+                    const retry = await fetch(
+                        `${CLOUDFLARE_API}/zones/${zoneId}/dns_records`,
+                        {
+                            method: "POST",
+                            headers: { ...headers, "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                type: "CNAME",
+                                name: domain,
+                                content: target,
+                                proxied: true,
+                                comment: "Managed by portfolio deploy",
+                            }),
+                        }
+                    );
+                    const retryData = await retry.json();
+                    if (retryData.success) {
+                        process.stdout.write(`  ✅ CNAME ${domain} → ${target} created\n`);
+                        return;
+                    }
+                    process.stdout.write(
+                        `  ⚠  Could not create CNAME after cleanup: ${retryData.errors?.[0]?.message || "unknown error"}\n`
+                    );
+                    process.stdout.write(
+                        `     Create it manually: DNS → Add record → CNAME ${domain} → ${target}\n`
+                    );
+                    return;
+                }
+            }
+            process.stdout.write(
+                `     Create it manually: DNS → Add record → CNAME ${domain} → ${target}\n`
+            );
+            return;
+        }
+
         process.stdout.write(`  ⚠  Could not create CNAME record: ${msg}\n`);
         process.stdout.write(
             `     Create it manually: DNS → Add record → CNAME ${domain} → ${target}\n`
@@ -220,6 +286,119 @@ async function ensureDnsRecord({ apiToken, domain, projectName, headers }) {
     }
 
     process.stdout.write(`  ✅ CNAME ${domain} → ${target} created\n`);
+}
+
+/**
+ * Remove a DNS record managed by a Worker on the given host.
+ * This can be either a DNS record flagged as managed by Workers,
+ * or a custom domain attached to a Worker script (which creates
+ * a Worker-managed record). Returns true if something was removed.
+ */
+async function removeWorkerManagedRecord({ apiToken, accountId, domain, projectName, zoneId, headers }) {
+    let removedAny = false;
+
+    // 1) Try DNS records flagged as managed by Workers
+    const listRes = await fetch(
+        `${CLOUDFLARE_API}/zones/${zoneId}/dns_records?name=${encodeURIComponent(domain)}`,
+        { headers }
+    );
+    const listData = await listRes.json();
+    const records = (listData.result || []).filter(r => r.meta?.managed_by === "workers");
+
+    for (const rec of records) {
+        const delRes = await fetch(
+            `${CLOUDFLARE_API}/zones/${zoneId}/dns_records/${rec.id}`,
+            { method: "DELETE", headers }
+        );
+        const delData = await delRes.json();
+        if (delData.success) {
+            process.stdout.write(`  ✅ Removed Worker-managed record ${rec.name} (${rec.type})\n`);
+            removedAny = true;
+        } else {
+            process.stdout.write(
+                `  ⚠  Could not remove record ${rec.name}: ${delData.errors?.[0]?.message || "unknown error"}\n`
+            );
+        }
+    }
+
+    // 2) Detach the custom domain from the routing Worker script
+    //    (a Worker custom domain also creates a Worker-managed DNS record)
+    const workerName = `${projectName}-router`;
+    const domRes = await fetch(
+        `${CLOUDFLARE_API}/accounts/${accountId}/workers/scripts/${workerName}/domains`,
+        { headers }
+    );
+    const domData = await domRes.json();
+    const attached = (domData.result || []).filter(d => d.hostname === domain);
+
+    for (const d of attached) {
+        const delRes = await fetch(
+            `${CLOUDFLARE_API}/accounts/${accountId}/workers/scripts/${workerName}/domains/${d.id}`,
+            { method: "DELETE", headers }
+        );
+        const delData = await delRes.json();
+        if (delData.success) {
+            process.stdout.write(`  ✅ Detached ${domain} from Worker ${workerName}\n`);
+            removedAny = true;
+        } else {
+            process.stdout.write(
+                `  ⚠  Could not detach ${domain} from Worker: ${delData.errors?.[0]?.message || "unknown error"}\n`
+            );
+        }
+    }
+
+    // 3) Detach the domain from ANY Worker custom domain in the account
+    const allDomRes = await fetch(
+        `${CLOUDFLARE_API}/accounts/${accountId}/workers/domains`,
+        { headers }
+    );
+    const allDomData = await allDomRes.json();
+    const allAttached = (allDomData.result || []).filter(d => d.hostname === domain);
+    for (const d of allAttached) {
+        const delRes = await fetch(
+            `${CLOUDFLARE_API}/accounts/${accountId}/workers/domains/${d.id}`,
+            { method: "DELETE", headers }
+        );
+        const delData = await delRes.json();
+        if (delData.success) {
+            process.stdout.write(`  ✅ Detached ${domain} from Worker (custom domain)\n`);
+            removedAny = true;
+        } else {
+            process.stdout.write(
+                `  ⚠  Could not detach custom domain: ${delData.errors?.[0]?.message || "unknown error"}\n`
+            );
+        }
+    }
+
+    // 4) Remove Worker routes (URL patterns) matching the domain
+    const routeRes = await fetch(
+        `${CLOUDFLARE_API}/accounts/${accountId}/workers/routes`,
+        { headers }
+    );
+    const routeData = await routeRes.json();
+    const matchingRoutes = (routeData.result || []).filter(r =>
+        r.pattern && (r.pattern === domain || r.pattern.startsWith(domain + "/") || r.pattern.startsWith("*." + domain))
+    );
+    for (const r of matchingRoutes) {
+        const delRes = await fetch(
+            `${CLOUDFLARE_API}/accounts/${accountId}/workers/routes/${r.id}`,
+            { method: "DELETE", headers }
+        );
+        const delData = await delRes.json();
+        if (delData.success) {
+            process.stdout.write(`  ✅ Removed Worker route ${r.pattern}\n`);
+            removedAny = true;
+        } else {
+            process.stdout.write(
+                `  ⚠  Could not remove Worker route ${r.pattern}: ${delData.errors?.[0]?.message || "unknown error"}\n`
+            );
+        }
+    }
+
+    if (!removedAny) {
+        process.stdout.write(`  ℹ  No Worker-managed record found to remove.\n`);
+    }
+    return removedAny;
 }
 
 /**
